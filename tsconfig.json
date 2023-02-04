@@ -1,0 +1,26 @@
+{
+  "include": ["src/**/*.ts*"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "jsx": "react",
+    "baseUrl": "src/",
+    "outDir": "dist/",
+    "target": "ESNext",
+    "module": "commonjs",
+    "strict": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true
+  }
+}

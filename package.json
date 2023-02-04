@@ -1,0 +1,26 @@
+{
+  "name": "sidekick",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "copy": "rm -rf dist && mkdir dist && cp -r public/* dist/",
+    "build": "npm run copy && esbuild src/*/index.ts* --bundle --outdir=dist --platform=browser",
+    "watch": "npm run copy && esbuild src/*/index.ts* --bundle --outdir=dist --platform=browser --watch"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "repository": "https://github.com/djma/the-receipts",
+  "bugs": "https://github.com/djma/the-receipts/issues",
+  "homepage": "https://github.com/djma/the-receipts#readme",
+  "devDependencies": {
+    "@types/react-dom": "^18.0.10",
+    "esbuild": "^0.16.14",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@types/chrome": "^0.0.212",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "webextension-polyfill-ts": "^0.26.0"
+  }
+}
