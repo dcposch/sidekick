@@ -13,7 +13,7 @@
   "background": {
     "service_worker": "background/index.js"
   },
-  "permissions": ["activeTab", "contextMenus", "scripting"],
+  "permissions": ["activeTab", "storage", "scripting"],
 
   "action": {
     "default_title": "Click to show an alert"
@@ -25,5 +25,10 @@
         "mac": "Command+E"
       }
     }
+  },
+
+  "options_ui": {
+    "page": "options/embedded.html",
+    "open_in_tab": false
   }
 }
