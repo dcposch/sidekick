@@ -3,6 +3,7 @@
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "jsx": "react",
+    "jsxFactory": "h",
     "baseUrl": "src/",
     "outDir": "dist/",
     "target": "ESNext",

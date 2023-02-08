@@ -1,5 +1,5 @@
 const DEFAULT_PARAMS = {
-  model: "text-davinci-003",
+  model: "code-davinci-002",
   temperature: 0.9,
   max_tokens: 400,
   top_p: 1,

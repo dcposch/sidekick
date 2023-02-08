@@ -16,14 +16,22 @@
   "permissions": ["activeTab", "storage", "scripting"],
 
   "action": {
-    "default_title": "Click to show an alert"
+    "default_title": "Sidekick",
+    "default_popup": "popup/popup.html"
   },
   "commands": {
     "_execute_action": {
       "suggested_key": {
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
+      }
+    },
+    "transform": {
+      "suggested_key": {
         "default": "Ctrl+E",
         "mac": "Command+E"
-      }
+      },
+      "description": "Transform the selected text"
     }
   },
 
