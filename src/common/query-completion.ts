@@ -40,7 +40,7 @@ export async function queryCompletion(
   console.log("Completion response", body);
   if (res.status === 200) {
     return {
-      params,
+      params: { provider: "openai", ...params },
       startMs,
       responseMs,
       success: true,
@@ -49,7 +49,7 @@ export async function queryCompletion(
     };
   } else {
     return {
-      params,
+      params: { provider: "openai", ...params },
       startMs,
       responseMs,
       success: false,
@@ -78,6 +78,7 @@ export type CompletionResponse =
     };
 
 export type CompletionParams = {
+  provider: "openai";
   model: string;
   max_tokens: number;
   temperature: number;
@@ -93,16 +94,4 @@ export type SuccessBody = {
   id: string;
   model: string;
   usage: {};
-};
-
-export type CompletionSummary = {
-  id: string;
-  timeUtc: number;
-  params: CompletionParams;
-  numCharsText: number;
-  numCharsPrompt: number;
-  responseMs: number;
-  success: boolean;
-  status: number;
-  numCharsCompletion: number;
 };

@@ -1,9 +1,10 @@
 import {
   APPROX_CHARS_PER_TOKEN,
+  CompletionParams,
   CompletionResponse,
-  CompletionSummary,
   queryCompletion,
 } from "common/query-completion";
+import { Transform } from "common/transform";
 import * as browser from "webextension-polyfill";
 import { render } from "./render";
 import { getReplaceableSelection, ReplaceableSelection } from "./selection";
@@ -74,25 +75,20 @@ async function tryTransform(state: SidekickState) {
     return;
   }
   await storage.local.set({ requestMs: Date.now() });
-  await transformReplaceSelection(
-    state,
-    selection,
-    currentTransform.instructions,
-    apiKey
-  );
+  await transformReplaceSelection(state, selection, currentTransform, apiKey);
   await storage.local.set({ requestMs: null });
 }
 
 export async function transformReplaceSelection(
   state: SidekickState,
   selection: ReplaceableSelection,
-  instructions: string,
+  transform: Transform,
   apiKey: string
 ) {
-  const text = selection.text;
-  console.log(`QA Replace Sel. Instructions: ${instructions}. Text: ${text}`);
-
+  const { text } = selection;
+  const { instructions } = transform;
   var prompt = `${instructions} \nQ: ${text}\n A:`;
+  console.log(`Prompt: ${prompt}`);
 
   try {
     document.body.style.cursor = "wait";
@@ -105,7 +101,7 @@ export async function transformReplaceSelection(
       state.popup = { type: "error", message: res.body.error.message };
     }
 
-    logCompletion(text, prompt, res);
+    logCompletion(transform, text, prompt, res);
   } catch (e) {
     console.error("Query error", e);
     state.popup = {
@@ -117,6 +113,7 @@ export async function transformReplaceSelection(
 }
 
 async function logCompletion(
+  transform: Transform,
   text: string,
   prompt: string,
   resp: CompletionResponse
@@ -125,20 +122,39 @@ async function logCompletion(
   const numCharsPrompt = prompt.length;
 
   let numCharsCompletion = resp.success ? resp.body.choices[0].text.length : 0;
-  const summary = {
+  const summary: TransformSummary = {
+    url: window.location.href,
+    domain: window.location.hostname,
+    transform,
+    success: resp.success,
+    status: resp.status,
     timeUtc: Math.floor(resp.startMs / 1000),
     responseMs: resp.responseMs,
     params: resp.params,
     numCharsText,
     numCharsPrompt,
     numCharsCompletion,
-  } as CompletionSummary;
+  };
 
-  let { completions } = await browser.storage.local.get("completions");
-  completions = completions || [];
-  completions.push(summary);
-  if (completions.length > 100) completions.unshift();
+  let { history } = await browser.storage.local.get("history");
+  history = history || [];
+  history.push(summary);
+  if (history.length > 100) history.unshift();
   // TODO: also keep summary stats by model
 
-  await browser.storage.local.set({ completions });
+  await browser.storage.local.set({ history });
 }
+
+export type TransformSummary = {
+  url: string;
+  domain: string;
+  transform: Transform;
+  timeUtc: number;
+  params: CompletionParams;
+  numCharsText: number;
+  numCharsPrompt: number;
+  responseMs: number;
+  success: boolean;
+  status: number;
+  numCharsCompletion: number;
+};

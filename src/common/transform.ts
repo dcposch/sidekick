@@ -1,6 +1,75 @@
+import { TransformSummary } from "content/action";
+import * as browser from "webextension-polyfill";
+
 export interface Transform {
   emoji: string;
   title: string;
   description: string;
   instructions: string;
 }
+
+/**
+ * The extension ships with a few default transforms. Users can add their own.
+ * The current list of transforms is stored in extension storage, ranked by
+ * usage.
+ */
+export async function getTransforms(): Promise<Transform[]> {
+  const { storage } = browser;
+  let promT = storage.sync.get("transforms");
+  let promH = storage.local.get("history");
+  let results = await Promise.all([promT, promH]);
+  let transforms = results[0].transforms as Transform[];
+  let history = results[1].history as TransformSummary[];
+
+  if (transforms == null) {
+    transforms = DEFAULT_TRANSFORMS.slice();
+    storage.sync.set({ transforms });
+  }
+  if (history == null) {
+    history = [];
+  }
+
+  // TODO: rank by usage
+  console.log(`Transforms`, transforms);
+  return transforms;
+}
+
+export async function saveTransforms(transforms: Transform[]) {
+  console.log(`Saving ${transforms.length} transforms`);
+  browser.storage.sync.set({ transforms });
+}
+
+const DEFAULT_TRANSFORMS: Transform[] = [
+  {
+    emoji: "♾\uFE0F",
+    title: "Create LaTeX",
+    description: "Convert selected instructions to LaTeX.",
+    instructions:
+      "Convert instructions to LaTeX. Include an equation environment if necessary.",
+  },
+  {
+    emoji: "✍️\uFE0F",
+    title: "Create Markdown",
+    description: "Convert selected instructions to Markdown.",
+    instructions: "Convert instructions to Markdown. Use a table if necessary.",
+  },
+  {
+    emoji: "🇺🇸",
+    title: "Translate to English",
+    description: "Translate selected text to English.",
+    instructions: "Translate the following text to English.",
+  },
+  {
+    emoji: "🇪🇸",
+    title: "Translate to Spanish",
+    description: "Translate selected text to Spanish.",
+    instructions: "Translate the following text to Spanish.",
+  },
+  {
+    emoji: "☯️",
+    title: "Simplify",
+    description: "Make selected text more concise.",
+    instructions:
+      "Rewrite the following text in concise, vivid language. Make it as simple as possible without losing meaning.",
+  },
+];

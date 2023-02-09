@@ -1,49 +1,22 @@
 console.log("Hello from the popup");
 import classNames from "classnames";
 import { messageToBackground } from "common/messages";
-import { Transform } from "common/transform";
+import { Transform, getTransforms } from "common/transform";
 import { render, h, Component, createRef } from "preact";
-import { PopupState } from "./state";
 
-const DEFAULT_TRANSFORMS: Transform[] = [
-  {
-    emoji: "♾\uFE0F",
-    title: "Create LaTeX",
-    description: "Convert selected instructions to LaTeX.",
-    instructions:
-      "Convert instructions to LaTeX. Include an equation environment if necessary.",
-  },
-  {
-    emoji: "✍️\uFE0F",
-    title: "Create Markdown",
-    description: "Convert selected instructions to Markdown.",
-    instructions: "Convert instructions to Markdown. Use a table if necessary.",
-  },
-  {
-    emoji: "🇺🇸",
-    title: "Translate to English",
-    description: "Translate selected text to English.",
-    instructions: "Translate the following text to English.",
-  },
-  {
-    emoji: "🇪🇸",
-    title: "Translate to Spanish",
-    description: "Translate selected text to Spanish.",
-    instructions: "Translate the following text to Spanish.",
-  },
-  {
-    emoji: "☯️",
-    title: "Simplify",
-    description: "Make selected text more concise.",
-    instructions:
-      "Rewrite the following text in concise, vivid language. Make it as simple as possible without losing meaning.",
-  },
-];
+export interface PopupState {
+  apiKey?: string;
+  query: string;
+  transforms: Transform[];
+  matchingTransforms: Transform[];
+  selectedIx: number;
+}
 
 class Popup extends Component {
   state: PopupState = {
     query: "",
-    matchingTransforms: DEFAULT_TRANSFORMS.slice(),
+    transforms: [],
+    matchingTransforms: [],
     selectedIx: 0,
   };
 
@@ -63,6 +36,7 @@ class Popup extends Component {
         <div className="transform-list">
           {matchingTransforms.map((transform, ix) => (
             <div
+              key={ix}
               className={classNames("transform", {
                 selected: ix === selectedIx,
               })}
@@ -81,17 +55,24 @@ class Popup extends Component {
     );
   }
 
+  async componentWillMount() {
+    const transforms = await getTransforms();
+    console.log(`Loaded ${transforms.length} transforms`);
+    this.setState({ transforms, matchingTransforms: transforms });
+  }
+
   componentDidMount() {
     this.refQueryInput.current!.focus();
   }
 
   queryInput = (e: Event) => {
     const query = (e.target as HTMLInputElement).value;
-    const matchingTransforms = DEFAULT_TRANSFORMS.filter((transform) =>
+    const { transforms } = this.state;
+    const matchingTransforms = transforms.filter((transform) =>
       transform.title.toLowerCase().includes(query.toLowerCase())
     );
     const oldSelTitle =
-      this.state.matchingTransforms[this.state.selectedIx].title;
+      this.state.matchingTransforms[this.state.selectedIx]?.title;
     const selectedIx = Math.max(
       0,
       matchingTransforms.findIndex(
