@@ -1,20 +1,11 @@
-import { ensure } from "common/assert";
-import * as browser from "webextension-polyfill";
-
 export interface SidekickState {
-  apiKey: string;
-  url: string;
-  isPopupOpen: boolean;
-  query: string;
-  matchingQuickActions: QuickAction[];
-  selectedIx: number;
-}
-
-export interface QuickAction {
-  emoji: string;
-  title: string;
-  description: string;
-  instructions: string;
+  popup:
+    | "none"
+    | "no-api-key"
+    | "no-transform"
+    | "no-selection"
+    | "selection-too-long"
+    | { type: "error"; message: string };
 }
 
 declare global {
@@ -24,37 +15,15 @@ declare global {
 }
 
 /** Finds or creates our extension state, storing it globally. */
-export async function getState(): Promise<SidekickState> {
-  const url = window.location.href;
+export function getState(): SidekickState {
   let state = window._sidekickState as SidekickState;
-  if (state == null || state.url !== url) {
-    // Create state for this page.
-    console.log(`Creating state for ${url}`);
-    const apiKey = (await browser.storage.sync.get("apiKey")).apiKey || "";
-    const matchingQuickActions = [
-      {
-        emoji: "Σ",
-        title: "Create LaTeX",
-        description: "Convert instructions to LaTeX.",
-        instructions:
-          "Convert English text to LaTeX. Include an equation environment if necessary.",
-      },
-    ];
-
+  if (state == null) {
+    console.log(`Creating state`);
     state = {
-      apiKey,
-      url,
-      isPopupOpen: true,
-      query: "",
-      matchingQuickActions,
-      selectedIx: 0,
+      popup: "none",
     };
     window._sidekickState = state;
   }
-
-  // Update state.
-  ensure(state.url === url);
-  // TODO: filter & rank QAs based on query
 
   return state;
 }

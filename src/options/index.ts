@@ -7,6 +7,12 @@ document.forms[0].addEventListener("submit", function (e) {
   saveOptions();
 });
 
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    window.close();
+  }
+});
+
 async function loadOptions() {
   const input = document.querySelector("#openai-api-key") as HTMLInputElement;
   const { apiKey } = await browser.storage.sync.get("apiKey");

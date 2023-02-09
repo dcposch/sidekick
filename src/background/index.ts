@@ -2,31 +2,32 @@ import { MessageCtoB } from "common/messages";
 import { Transform } from "common/transform";
 import * as browser from "webextension-polyfill";
 
-console.log("Background script hello world");
+init();
 
-/** The action is triggered by clicking on the extension, or Ctrl+E */
-// browser.action.onClicked.addListener((tab) => {
-//   if (tab.id == null || tab.url == null || !tab.url.startsWith("http")) {
-//     console.log(`Skipping action for non-http tab: ${tab.url}`);
-//     return;
-//   }
+async function init() {
+  console.log("Initializing background script");
+  const { currentTransform } = await browser.storage.local.get(
+    "currentTransform"
+  );
+  if (currentTransform != null) {
+    setBadge(currentTransform);
+  }
+}
 
-//   /** Execute content script, show quick actions. Doing this on action only
-//    *  avoids the scary "this extension has access to all sites" permission. */
-//   console.log("Action triggered");
-//   browser.scripting.executeScript({
-//     target: { tabId: tab.id },
-//     files: ["content/index.js"],
-//   });
-// });
-
-// let currentTransform: Transform | null = null;
-
+/** Command triggered via Cmd/Ctrl+E */
 browser.commands.onCommand.addListener(
   (command: string, tab?: browser.Tabs.Tab) => {
     console.log(`Command ${command} triggered`);
     if (command !== "transform") return;
-    if (tab == null || tab.id == null) return;
+    if (
+      tab == null ||
+      tab.id == null ||
+      tab.url == null ||
+      !tab.url.startsWith("http")
+    ) {
+      console.log(`Skipping action for non-http tab: ${tab?.url}`);
+      return;
+    }
 
     /** Execute content script, execute transform. */
     // console.log(`Executing current transform: ${currentTransform.emoji}`);
@@ -47,11 +48,16 @@ browser.runtime.onMessage.addListener(async (message: MessageCtoB, sender) => {
       break;
     case "selectTransform":
       console.log("selectTransform", message.transform);
-      await browser.action.setBadgeBackgroundColor({ color: "#35363A" });
-      browser.action.setBadgeText({ text: message.transform.emoji });
+      setBadge(message.transform);
       browser.storage.local.set({ currentTransform: message.transform });
       break;
     default:
       console.log("Unknown message type", message);
   }
 });
+
+/** Sets the "badge" to show the user which transform is selected. */
+function setBadge(transform: Transform) {
+  browser.action.setBadgeText({ text: transform.emoji });
+  browser.action.setBadgeBackgroundColor({ color: "#35363A" });
+}

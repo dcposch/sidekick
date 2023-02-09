@@ -10,65 +10,108 @@ export function render(state: SidekickState) {
     shadow = createShadow();
   }
 
-  console.log("Rendering popup. Open: " + state.isPopupOpen);
-  if (state.isPopupOpen) {
-    shadow.style.display = "block";
-    renderContents(state, shadow);
-  } else {
+  console.log("Rendering popup: " + state.popup);
+  if (state.popup === "none") {
     shadow.style.display = "none";
-  }
-}
-
-function renderContents(state: SidekickState, shadow: HTMLDivElement) {
-  const popup = shadow.shadowRoot!.children[1] as HTMLDivElement;
-  console.log("Rendering popup contents", popup);
-
-  let children = [] as HTMLElement[];
-  if (state.apiKey.length === 0) {
-    console.log("Rendering no API key");
-    children.push(renderNoApiKey());
   } else {
-    console.log("Rendering quick actions");
-    children.push(renderQuickActions(state));
+    shadow.style.display = "block";
+    const popup = shadow.shadowRoot!.children[1] as HTMLDivElement;
+    popup.replaceChildren(renderContents(state));
   }
-  popup.replaceChildren(...children);
-
-  const input = popup.querySelector(".query-input") as HTMLInputElement;
-  if (input != null) input.focus();
 }
 
-function renderQuickActions(state: SidekickState) {
-  const div = document.createElement("div");
-  div.className = "quick-actions";
-
-  const query = document.createElement("input");
-  query.className = "query-input";
-  div.appendChild(query);
-
-  const list = document.createElement("div");
-  list.className = "quick-action-list";
-  for (let i = 0; i < state.matchingQuickActions.length; i++) {
-    const item = document.createElement("div");
-    item.classList.add("quick-action-item");
-    if (i === state.selectedIx) {
-      item.classList.add("selected");
-    }
-    const qa = state.matchingQuickActions[i];
-    item.textContent = qa.emoji + " " + qa.title;
-    list.appendChild(item);
+function renderContents(state: SidekickState) {
+  switch (state.popup) {
+    case "no-api-key":
+      return renderNoApiKey();
+    case "no-transform":
+      return renderNoTransform();
+    case "no-selection":
+      return renderNoSelection();
+    case "selection-too-long":
+      return renderSelectionTooLong();
+    case "none":
+      throw new Error();
+    default:
+      if (state.popup.type === "error") {
+        return renderError(state.popup.message);
+      }
+      throw new Error(`Unknown popup type: ${state.popup}`);
   }
-  div.appendChild(list);
+}
 
-  // TODO
+function renderError(message: string) {
+  const div = document.createElement("div");
+
+  const h1 = document.createElement("h1");
+  h1.innerHTML = "⚡️ &nbsp; Transform error";
+  div.appendChild(h1);
+
+  const p = document.createElement("p");
+  p.append(`Sorry, that didn't work.`);
+  div.appendChild(p);
+
+  const p2 = document.createElement("p");
+  p2.append(message);
+  div.appendChild(p2);
+
   return div;
+}
+
+function renderNoTransform() {
+  const div = document.createElement("div");
+
+  const h1 = document.createElement("h1");
+  h1.innerHTML = "⚡️ &nbsp; No transform selected";
+  div.appendChild(h1);
+
+  const p = document.createElement("p");
+  p.append(`Use ${getShortcut("Shift+E")} to select a transform.`);
+  div.appendChild(p);
+
+  return div;
+}
+
+function renderNoSelection() {
+  const div = document.createElement("div");
+
+  const h1 = document.createElement("h1");
+  h1.innerHTML = "⚡️ &nbsp; No selection";
+  div.appendChild(h1);
+
+  const p = document.createElement("p");
+  p.append(
+    `Did you select editable text? We don't support certain websites with funky selection mechanics yet, like Google Docs.`
+  );
+  div.appendChild(p);
+
+  return div;
+}
+
+function renderSelectionTooLong() {
+  const div = document.createElement("div");
+
+  const h1 = document.createElement("h1");
+  h1.innerHTML = "⚡️ &nbsp; Selection too long";
+  div.appendChild(h1);
+
+  const p = document.createElement("p");
+  p.append(`The AI has a length limitation. Try selecting less text.`);
+  div.appendChild(p);
+
+  return div;
+}
+
+function getShortcut(suffix: string) {
+  const isMac = window.navigator.userAgent.toLowerCase().includes("mac");
+  return (isMac ? "Cmd" : "Ctrl") + "+" + suffix;
 }
 
 function renderNoApiKey() {
   const div = document.createElement("div");
-  div.className = "no-api-key";
 
   const h1 = document.createElement("h1");
-  h1.textContent = "⚡️ missing API key";
+  h1.innerHTML = "⚡️ &nbsp; Missing API key";
   div.appendChild(h1);
 
   const p = document.createElement("p");
@@ -102,6 +145,17 @@ function createShadow(): HTMLDivElement {
   shadow.appendChild(createStylesheet());
   shadow.appendChild(createPopup());
   document.body.appendChild(container);
+
+  document.addEventListener(
+    "keydown",
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        dispatch({ type: "closePopup" });
+      }
+    },
+    { capture: true }
+  );
+
   return container;
 }
 
@@ -118,7 +172,7 @@ function createStylesheet(): HTMLStyleElement {
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 18px;
       }
 
       a, a:visited {
@@ -137,39 +191,12 @@ function createStylesheet(): HTMLStyleElement {
         font: 16px system-ui, sans-serif;
         color: #ddd;
         line-height: 1.5;
-      }
-
-      .no-api-key {
         width: 384px;
         padding: 16px;
       }
 
-      .quick-actions {
-        width: 384px;
-        min-height: 192px;
-      }
-
-      .query-input {
-        width: 100%;
-        padding: 16px;
-        border: none;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        background-color: #444;
-        outline: none;
-        color: #ddd;
-      }
-
-      .quick-action-list {
-      }
-
-      .quick-action-item {
-        padding: 8px;
-        border-top: 1px solid #444;
-      }
-
-      .quick-action-item.selected {
-        background-color: #333;
+      .popup p {
+        padding: 0 8px;
       }
     `;
   return style;
@@ -183,12 +210,6 @@ function createPopup(): HTMLDivElement {
     console.log(`Keydown: ${ev.key}`);
     if (ev.key === "Escape") {
       dispatch({ type: "closePopup" });
-    } else if (ev.key === "Up") {
-      dispatch({ type: "selectQuickAction", dir: -1 });
-    } else if (ev.key === "Down") {
-      dispatch({ type: "selectQuickAction", dir: 1 });
-    } else if (ev.key === "Enter") {
-      dispatch({ type: "executeQuickAction" });
     }
   });
   return popup;
