@@ -1,6 +1,8 @@
 import { ensure } from "common/assert";
 import { Component, h } from "preact";
 import { Transform, getTransforms, saveTransforms } from "../common/transform";
+import * as browser from "webextension-polyfill";
+import { messageToBackground } from "common/messages";
 
 interface TransformsPageState {
   transforms: Transform[];
@@ -45,7 +47,7 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
     this.setState({ isCreating: false });
   };
 
-  save = (newTransform?: Transform, old?: Transform) => {
+  save = async (newTransform?: Transform, old?: Transform) => {
     const transforms = this.state.transforms.slice();
     if (old == null) {
       // Create
@@ -63,8 +65,21 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
       ensure(i >= 0);
       transforms[i] = newTransform;
     }
+
+    // Save the new and improved list of transforms
     saveTransforms(transforms);
     this.setState({ transforms, isCreating: false });
+
+    // If necessary, update the selected transform
+    const { currentTransform } = await browser.storage.local.get(
+      "currentTransform"
+    );
+    if (
+      currentTransform?.emoji === old?.emoji &&
+      currentTransform?.title === old?.title
+    ) {
+      messageToBackground({ type: "selectTransform", transform: newTransform });
+    }
   };
 }
 
@@ -75,6 +90,7 @@ interface TRowProps {
 }
 
 interface TRowState {
+  errorMessage?: string;
   editing: boolean;
   emoji: string;
   title: string;
@@ -164,6 +180,7 @@ class TransformRow extends Component<TRowProps, TRowState> {
             <button onClick={this.save}>Save</button> &nbsp;{" "}
             <button onClick={this.cancel}>Cancel</button> &nbsp;{" "}
             <button onClick={this.delete}>Delete</button>
+            <div class="error">{this.state.errorMessage}</div>
           </div>
         </div>
       );
@@ -192,22 +209,26 @@ class TransformRow extends Component<TRowProps, TRowState> {
 
     console.log("Saving transform", newT);
     this.props.save(newT, this.props.transform);
-    this.setState({ editing: false });
+    this.setState({ editing: false, errorMessage: undefined });
     return 0;
   };
 
-  err(msg: string) {
-    window.alert(msg);
+  err(errorMessage: string) {
+    this.setState({ errorMessage });
     return 0;
   }
 
   cancel = () => {
     this.props.cancel && this.props.cancel();
-    this.setState({ editing: false, ...this.props.transform });
+    this.setState({
+      editing: false,
+      errorMessage: undefined,
+      ...this.props.transform,
+    });
   };
 
   delete = () => {
     this.props.save(undefined, this.props.transform);
-    this.setState({ editing: false });
+    this.setState({ editing: false, errorMessage: undefined });
   };
 }

@@ -8,7 +8,7 @@ export type MessageCtoB =
     }
   | {
       type: "selectTransform";
-      transform: Transform;
+      transform?: Transform;
     };
 
 /** Message from background process to tab (content script). */

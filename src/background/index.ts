@@ -30,7 +30,6 @@ browser.commands.onCommand.addListener(
     }
 
     /** Execute content script, execute transform. */
-    // console.log(`Executing current transform: ${currentTransform.emoji}`);
     browser.scripting.executeScript({
       target: { tabId: tab.id },
       files: ["content/index.js"],
@@ -48,8 +47,10 @@ browser.runtime.onMessage.addListener(async (message: MessageCtoB, sender) => {
       break;
     case "selectTransform":
       console.log("selectTransform", message.transform);
-      setBadge(message.transform);
-      browser.storage.local.set({ currentTransform: message.transform });
+      await browser.storage.local.set({
+        currentTransform: message.transform || null,
+      });
+      await setBadge(message.transform);
       break;
     default:
       console.log("Unknown message type", message);
@@ -57,8 +58,9 @@ browser.runtime.onMessage.addListener(async (message: MessageCtoB, sender) => {
 });
 
 /** Sets the "badge" to show the user which transform is selected. */
-async function setBadge(transform: Transform) {
-  const p1 = browser.action.setBadgeText({ text: transform.emoji });
+async function setBadge(transform?: Transform) {
+  const p1 = browser.action.setBadgeText({ text: transform?.emoji || "" });
   const p2 = browser.action.setBadgeBackgroundColor({ color: "#35363A" });
   await Promise.all([p1, p2]);
+  console.log(`Updated the badge to ${transform?.emoji}`);
 }
