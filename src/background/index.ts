@@ -57,7 +57,8 @@ browser.runtime.onMessage.addListener(async (message: MessageCtoB, sender) => {
 });
 
 /** Sets the "badge" to show the user which transform is selected. */
-function setBadge(transform: Transform) {
-  browser.action.setBadgeText({ text: transform.emoji });
-  browser.action.setBadgeBackgroundColor({ color: "#35363A" });
+async function setBadge(transform: Transform) {
+  const p1 = browser.action.setBadgeText({ text: transform.emoji });
+  const p2 = browser.action.setBadgeBackgroundColor({ color: "#35363A" });
+  await Promise.all([p1, p2]);
 }

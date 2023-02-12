@@ -103,7 +103,7 @@ class TransformRow extends Component<TRowProps, TRowState> {
             <input
               type="text"
               value={this.state.emoji}
-              placeholder="🐷"
+              placeholder="♡"
               onInput={(e) => {
                 this.setState({ emoji: (e.target as HTMLInputElement).value });
               }}

@@ -3,16 +3,17 @@ import classNames from "classnames";
 import { messageToBackground } from "common/messages";
 import { Transform, getTransforms } from "common/transform";
 import { render, h, Component, createRef } from "preact";
+import * as browser from "webextension-polyfill";
 
 export interface PopupState {
-  apiKey?: string;
+  missingApiKey?: boolean;
   query: string;
   transforms: Transform[];
   matchingTransforms: Transform[];
   selectedIx: number;
 }
 
-class Popup extends Component {
+class Popup extends Component<{}, PopupState> {
   state: PopupState = {
     query: "",
     transforms: [],
@@ -23,7 +24,8 @@ class Popup extends Component {
   refQueryInput = createRef<HTMLInputElement>();
 
   render() {
-    const { matchingTransforms, selectedIx } = this.state;
+    const { missingApiKey, matchingTransforms, selectedIx } = this.state;
+    const firstN = matchingTransforms.slice(0, 8);
     return (
       <div className="popup">
         <input
@@ -34,12 +36,13 @@ class Popup extends Component {
           className="query-input"
         ></input>
         <div className="transform-list">
-          {matchingTransforms.map((transform, ix) => (
+          {firstN.map((transform, ix) => (
             <div
               key={ix}
               className={classNames("transform", {
                 selected: ix === selectedIx,
               })}
+              onClick={() => this.selectTransform(transform)}
             >
               <div className="emoji">{transform.emoji}</div>
               <div className="title-desc">
@@ -51,6 +54,16 @@ class Popup extends Component {
             </div>
           ))}
         </div>
+        <div class="cta">
+          <a
+            href="#"
+            onClick={this.goToOptionsPage}
+            className={classNames({ error: missingApiKey })}
+          >
+            {missingApiKey && "Required - add OpenAI API key"}
+            {!missingApiKey && "+ add transform"}
+          </a>
+        </div>
       </div>
     );
   }
@@ -58,7 +71,14 @@ class Popup extends Component {
   async componentWillMount() {
     const transforms = await getTransforms();
     console.log(`Loaded ${transforms.length} transforms`);
-    this.setState({ transforms, matchingTransforms: transforms });
+    const { apiKey } = await browser.storage.sync.get("apiKey");
+    const missingApiKey = apiKey == null || apiKey === "";
+    console.log(`API key ${missingApiKey ? "missing" : "present"}`);
+    this.setState({
+      missingApiKey,
+      transforms,
+      matchingTransforms: transforms,
+    });
   }
 
   componentDidMount() {
@@ -103,6 +123,15 @@ class Popup extends Component {
     } else if (e.key === "Escape") {
       window.close();
     }
+  };
+
+  selectTransform = async (transform: Transform) => {
+    await messageToBackground({ type: "selectTransform", transform });
+    window.close();
+  };
+
+  goToOptionsPage = async () => {
+    browser.runtime.openOptionsPage();
   };
 }
 

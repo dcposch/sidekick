@@ -1,6 +1,13 @@
 /** Gets the currently selected text on the page.
  * This is much harder than it needs to be, especially if you want to support Google Docs, which completely replaces the native browser selection mechanism. */
 export function getReplaceableSelection(): ReplaceableSelection | null {
+  if (window.location.hostname === "docs.google.com") {
+    // Unfortunately the google-docs-utils package doesn't work anymore.
+    // It is technically possible to read from Google Docs, but they make it
+    // very ugly. Grammarly does it, requires "modify all sites" permissions.
+    return null;
+  }
+
   const sel = window.getSelection();
   console.log("Selection", sel);
   if (sel == null || sel.rangeCount !== 1) {
@@ -54,6 +61,9 @@ class EditableSelection implements ReplaceableSelection {
   }
 
   replace(newText: string) {
+    if (document.execCommand("insertText", false, newText)) {
+      return;
+    }
     this.range.deleteContents();
     this.range.insertNode(document.createTextNode(newText));
   }
@@ -71,11 +81,37 @@ class TextareaSelection implements ReplaceableSelection {
   }
 
   replace(newText: string) {
+    if (document.execCommand("insertText", false, newText)) {
+      return;
+    }
     this.textarea.setRangeText(
       newText,
       this.textarea.selectionStart,
       this.textarea.selectionEnd,
       "end"
     );
+  }
+}
+
+/** Special sauce for Google Docs */
+class GoogleDocsSelection implements ReplaceableSelection {
+  text: string;
+
+  constructor(sel: ((GetSelectionResult | null)[] | null)[]) {
+    const parts = [];
+    for (const line of sel) {
+      if (line == null) continue;
+      for (const word of line) {
+        if (word == null) continue;
+        parts.push(word.selectedText);
+      }
+    }
+    this.text = parts.join("");
+
+    console.log("Google Docs selection", this.text, sel);
+  }
+
+  replace(newText: string) {
+    typeText(newText);
   }
 }

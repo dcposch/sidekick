@@ -135,6 +135,7 @@ async function logCompletion(
     numCharsPrompt,
     numCharsCompletion,
   };
+  console.log("Saving summary to history", summary);
 
   let { history } = await browser.storage.local.get("history");
   history = history || [];

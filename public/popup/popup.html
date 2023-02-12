@@ -45,9 +45,32 @@
         border-top: 1px solid #444;
         display: grid;
         grid-template-columns: 32px 1fr;
+        cursor: pointer;
+      }
+
+      .transform:hover {
+        background-color: #2a2a2a;
       }
 
       .transform.selected {
+        background-color: #333;
+      }
+
+      .cta {
+        padding: 8px;
+        border-top: 1px solid #444;
+      }
+
+      .cta a {
+        display: block;
+        padding: 8px;
+        text-align: center;
+        color: #aaa;
+        border-radius: 2px;
+        text-decoration: none;
+      }
+
+      .cta a:hover {
         background-color: #333;
       }
     </style>
