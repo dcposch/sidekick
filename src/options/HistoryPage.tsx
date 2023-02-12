@@ -25,11 +25,9 @@ export class HistoryPage extends Component<{}, HistoryPageState> {
           {history.map((t, i) => (
             <pre class="transform" key={i}>
               {`
-${t.transform.emoji} ${t.transform.title} using ${t.params.model}
-On ${t.domain}
-${t.success ? "Succeeded" : "FAILED " + t.status}
-Chars ${t.numCharsPrompt} prompt ${t.numCharsCompletion} completion
-Took ${t.responseMs.toFixed(0)}ms`}
+${t.transform.emoji} ${t.transform.title} using ${t.params.model} on ${t.domain}
+${t.success ? "Succeeded" : "FAILED " + t.status}, took ${t.responseMs | 0}ms
+Chars ${t.numCharsPrompt} prompt ${t.numCharsCompletion} completion`}
             </pre>
           ))}
         </div>
