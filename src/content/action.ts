@@ -90,8 +90,11 @@ export async function transformReplaceSelection(
   var prompt = `${instructions} \nQ: ${text}\n A:`;
   console.log(`Prompt: ${prompt}`);
 
+  const style = document.createElement("style");
+  style.textContent = "* { cursor: wait !important }";
+  document.head.appendChild(style);
+
   try {
-    document.body.style.cursor = "wait";
     const res = await queryCompletion(apiKey, prompt);
     if (res.success) {
       const result = res.body.choices[0].text.trim();
@@ -109,7 +112,8 @@ export async function transformReplaceSelection(
       message: "Couldn't query OpenAI. Are you offline?",
     };
   }
-  document.body.style.cursor = "default";
+
+  document.head.removeChild(style);
 }
 
 async function logCompletion(
