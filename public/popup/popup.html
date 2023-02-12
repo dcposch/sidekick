@@ -27,12 +27,14 @@
       }
 
       .query-input {
-        width: 100%;
+        width: calc(100% - 16px);
         padding: 16px;
+        padding-left: 40px;
+        background-color: transparent;
         border: none;
-        background-color: #444;
         outline: none;
         color: #ddd;
+        border-radius: 2px;
       }
 
       .transform-list {
@@ -42,7 +44,6 @@
 
       .transform {
         padding: 8px;
-        border-top: 1px solid #444;
         display: grid;
         grid-template-columns: 32px 1fr;
         cursor: pointer;
@@ -58,7 +59,6 @@
 
       .cta {
         padding: 8px;
-        border-top: 1px solid #444;
       }
 
       .cta a {
@@ -70,8 +70,13 @@
         text-decoration: none;
       }
 
+      .cta.error a {
+        color: #ddd;
+        font-weight: bold;
+      }
+
       .cta a:hover {
-        background-color: #333;
+        background-color: #2a2a2a;
       }
     </style>
     <script defer src="index.js"></script>

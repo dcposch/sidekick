@@ -54,14 +54,10 @@ class Popup extends Component<{}, PopupState> {
             </div>
           ))}
         </div>
-        <div class="cta">
-          <a
-            href="#"
-            onClick={this.goToOptionsPage}
-            className={classNames({ error: missingApiKey })}
-          >
+        <div className={classNames("cta", { error: missingApiKey })}>
+          <a href="#" onClick={this.goToOptionsPage}>
             {missingApiKey && "Required - add OpenAI API key"}
-            {!missingApiKey && "+ add transform"}
+            {!missingApiKey && "Add transform"}
           </a>
         </div>
       </div>

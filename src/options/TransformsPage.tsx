@@ -25,8 +25,12 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
         {!isCreating && <button onClick={this.addTransform}>+</button>}
         {isCreating && <TransformRow save={this.save} cancel={this.cancel} />}
         <div class="transforms">
-          {transforms.map((transform, i) => (
-            <TransformRow key={i} transform={transform} save={this.save} />
+          {transforms.map((transform) => (
+            <TransformRow
+              key={transform.emoji + transform.title}
+              transform={transform}
+              save={this.save}
+            />
           ))}
         </div>
       </div>
@@ -41,11 +45,20 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
     this.setState({ isCreating: false });
   };
 
-  save = (newTransform: Transform, old?: Transform) => {
+  save = (newTransform?: Transform, old?: Transform) => {
     const transforms = this.state.transforms.slice();
     if (old == null) {
+      // Create
+      ensure(newTransform != null);
       transforms.unshift(newTransform);
+    } else if (newTransform == null) {
+      // Delete
+      ensure(old != null);
+      const i = transforms.indexOf(old);
+      ensure(i >= 0);
+      transforms.splice(i, 1);
     } else {
+      // Edit
       const i = transforms.indexOf(old);
       ensure(i >= 0);
       transforms[i] = newTransform;
@@ -57,7 +70,7 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
 
 interface TRowProps {
   transform?: Transform;
-  save: (newTransform: Transform, old?: Transform) => void;
+  save: (newTransform?: Transform, old?: Transform) => void;
   cancel?: () => void;
 }
 
@@ -149,7 +162,8 @@ class TransformRow extends Component<TRowProps, TRowState> {
               on Mac).
             </div>
             <button onClick={this.save}>Save</button> &nbsp;{" "}
-            <button onClick={this.cancel}>Cancel</button>
+            <button onClick={this.cancel}>Cancel</button> &nbsp;{" "}
+            <button onClick={this.delete}>Delete</button>
           </div>
         </div>
       );
@@ -162,19 +176,38 @@ class TransformRow extends Component<TRowProps, TRowState> {
 
   save = () => {
     const { emoji, title, description, instructions } = this.state;
-    const newTransform = {
-      emoji,
-      title,
-      description,
-      instructions,
+    const newT = {
+      emoji: emoji.trim(),
+      title: title.trim(),
+      description: description.trim(),
+      instructions: instructions.trim(),
     };
-    console.log("Saving transform", newTransform);
-    this.props.save(newTransform, this.props.transform);
+    if (newT.emoji === "") return this.err("Missing emoji");
+    if (newT.emoji.length > 4) return this.err("Not an emoji");
+    if (newT.title === "") return this.err("Missing title");
+    if (newT.title.length > 64) return this.err("Title too long");
+    if (newT.instructions === "") return this.err("Missing instructions");
+    if (newT.instructions.length > 2000)
+      return this.err("Instructions too long");
+
+    console.log("Saving transform", newT);
+    this.props.save(newT, this.props.transform);
     this.setState({ editing: false });
+    return 0;
   };
+
+  err(msg: string) {
+    window.alert(msg);
+    return 0;
+  }
 
   cancel = () => {
     this.props.cancel && this.props.cancel();
     this.setState({ editing: false, ...this.props.transform });
+  };
+
+  delete = () => {
+    this.props.save(undefined, this.props.transform);
+    this.setState({ editing: false });
   };
 }

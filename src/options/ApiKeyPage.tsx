@@ -3,20 +3,20 @@ import { Component, h } from "preact";
 import * as browser from "webextension-polyfill";
 
 interface ApiKeyPageState {
-  apiKey: string | null;
+  apiKey?: string;
   saveError: boolean;
   saveStatus: string;
 }
 
 export class APIKeyPage extends Component<{}, ApiKeyPageState> {
   state: ApiKeyPageState = {
-    apiKey: null,
     saveError: false,
     saveStatus: "",
   };
 
   async componentWillMount() {
-    const { apiKey } = await browser.storage.sync.get("apiKey");
+    let { apiKey } = await browser.storage.sync.get("apiKey");
+    apiKey = apiKey || "";
     this.setState({ apiKey });
   }
 
