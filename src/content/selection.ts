@@ -71,7 +71,13 @@ class EditableSelection implements ReplaceableSelection {
   }
 
   replace(newText: string) {
-    // Don't use execCommand here, it doesn't work on sites like Notion.
+    const { hostname } = window.location;
+    if (hostname.endsWith("twitter.com")) {
+      console.log(`Using execCommand on ${hostname}`);
+      document.execCommand("insertText", false, newText);
+      return;
+    }
+    console.log("Attempting replacement via deleteContents()");
     this.range.deleteContents();
     this.range.insertNode(document.createTextNode(newText));
   }
@@ -90,9 +96,11 @@ class TextareaInputSelection implements ReplaceableSelection {
   }
 
   replace(newText: string) {
+    console.log(`Trying execCommand on input or textarea`);
     if (document.execCommand("insertText", false, newText)) {
       return;
     }
+    console.log(`Trying setRangeText on input or textarea`);
     this.textarea.setRangeText(newText, this.selStart, this.selEnd, "end");
   }
 }
