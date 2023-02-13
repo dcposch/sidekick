@@ -1,8 +1,6 @@
 import { ensure } from "common/assert";
-import { Component, h } from "preact";
-import { Transform, getTransforms, saveTransforms } from "../common/transform";
-import * as browser from "webextension-polyfill";
-import { messageToBackground } from "common/messages";
+import { Component, createRef, h } from "preact";
+import { getTransforms, saveTransforms, Transform } from "../common/transform";
 
 interface TransformsPageState {
   transforms: Transform[];
@@ -24,7 +22,11 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
     const { transforms, isCreating } = this.state;
     return (
       <div class="page-transforms">
-        {!isCreating && <button onClick={this.addTransform}>+</button>}
+        {!isCreating && (
+          <div className="add-transform-row">
+            <button onClick={this.addTransform}>Add transform</button>
+          </div>
+        )}
         {isCreating && <TransformRow save={this.save} cancel={this.cancel} />}
         <div class="transforms">
           {transforms.map((transform) => (
@@ -69,17 +71,6 @@ export class TransformsPage extends Component<{}, TransformsPageState> {
     // Save the new and improved list of transforms
     saveTransforms(transforms);
     this.setState({ transforms, isCreating: false });
-
-    // If necessary, update the selected transform
-    const { currentTransform } = await browser.storage.local.get(
-      "currentTransform"
-    );
-    if (
-      currentTransform?.emoji === old?.emoji &&
-      currentTransform?.title === old?.title
-    ) {
-      messageToBackground({ type: "selectTransform", transform: newTransform });
-    }
   };
 }
 
@@ -125,7 +116,11 @@ class TransformRow extends Component<TRowProps, TRowState> {
       );
     } else {
       return (
-        <div class="transform">
+        <div
+          class="transform"
+          onKeyDown={this.keyDown}
+          onKeyPress={this.keyDown}
+        >
           <div class="cell">
             <input
               type="text"
@@ -141,6 +136,7 @@ class TransformRow extends Component<TRowProps, TRowState> {
               <input
                 type="text"
                 placeholder="Pig Latin"
+                ref={this.focus}
                 value={this.state.title}
                 onInput={(e) => {
                   this.setState({
@@ -169,6 +165,26 @@ class TransformRow extends Component<TRowProps, TRowState> {
       );
     }
   }
+
+  inputTitle: HTMLInputElement | null = null;
+  focus = (e: HTMLInputElement | null) => {
+    console.log(e);
+    this.inputTitle = e;
+    if (e != null) e.focus();
+  };
+
+  componentDidMount(): void {
+    // Not clear why this is necessary, but it is. Runs on Add Transform.
+    if (this.inputTitle != null) this.inputTitle.focus();
+  }
+
+  keyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && this.state.editing) {
+      console.log("Escaping edit");
+      e.stopPropagation();
+      this.cancel();
+    }
+  };
 
   edit = () => {
     this.setState({ editing: true });

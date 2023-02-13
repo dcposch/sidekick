@@ -23,12 +23,21 @@ export class HistoryPage extends Component<{}, HistoryPageState> {
       <div class="page-history">
         <div class="history">
           {history.map((t, i) => (
-            <pre class="transform" key={i}>
-              {`
-${t.transform.emoji} ${t.transform.title} using ${t.params.model} on ${t.domain}
+            <div class="transform" key={i}>
+              <div>{t.transform.emoji}</div>
+              <div>
+                <div>
+                  {t.transform.title} using {t.params.model}
+                  <br />
+                  {t.domain}
+                </div>
+                <pre>
+                  {`
 ${t.success ? "Succeeded" : "FAILED " + t.status}, took ${t.responseMs | 0}ms
-Chars ${t.numCharsPrompt} prompt ${t.numCharsCompletion} completion`}
-            </pre>
+Chars ${t.numCharsPrompt} prompt ${t.numCharsCompletion} completion`.trim()}
+                </pre>
+              </div>
+            </div>
           ))}
         </div>
       </div>

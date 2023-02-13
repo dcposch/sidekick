@@ -53,12 +53,8 @@ class Popup extends Component<{}, PopupState> {
           ))}
         </div>
         <div className="help">
-          <span class="keyboard-shortcut">Cmd+Shift+E</span> to open this
-          picker.
-        </div>
-        <div className="help">
-          Select text, then use <span class="keyboard-shortcut">Cmd+E</span> to
-          apply.
+          Use <span class="keyboard-shortcut">Cmd+Shift+E</span> to open
+          Sidekick.
         </div>
         <div className={classNames("cta", { error: missingApiKey })}>
           <a href="#" onClick={this.goToOptionsPage}>
@@ -108,11 +104,7 @@ class Popup extends Component<{}, PopupState> {
     const { matchingTransforms, selectedIx } = this.state;
 
     if (e.key === "Enter") {
-      await messageToBackground({
-        type: "selectTransform",
-        transform: matchingTransforms[selectedIx],
-      });
-      window.close();
+      await this.selectTransform(matchingTransforms[selectedIx]);
     } else if (e.key === "ArrowUp") {
       // Up key
       this.setState({
@@ -128,7 +120,7 @@ class Popup extends Component<{}, PopupState> {
   };
 
   selectTransform = async (transform: Transform) => {
-    await messageToBackground({ type: "selectTransform", transform });
+    await messageToBackground({ type: "applyTransform", transform });
     window.close();
   };
 

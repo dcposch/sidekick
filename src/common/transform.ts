@@ -28,7 +28,14 @@ export async function getTransforms(): Promise<Transform[]> {
     history = [];
   }
 
-  // TODO: rank by usage
+  // Put most-recently-used transforms at the top of the list.
+  const historyMap = new Map(history.map((h, i) => [h.transform.title, i]));
+  transforms.sort((a, b) => {
+    const aIx = historyMap.get(a.title) || -1;
+    const bIx = historyMap.get(b.title) || -1;
+    return bIx - aIx;
+  });
+
   console.log(`Transforms`, transforms);
   return transforms;
 }

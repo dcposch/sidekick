@@ -50,18 +50,16 @@
       button {
         background-color: transparent;
         color: #ddd;
-        border: 1px solid #888;
+        border: none;
         border-radius: 4px;
         cursor: pointer;
         font-size: 1rem;
         padding: 0.5rem 1rem;
       }
       button:hover {
-        border-color: #999;
         background-color: rgba(255, 255, 255, 0.1);
       }
       button:active {
-        border-color: #aaa;
         background-color: rgba(255, 255, 255, 0.2);
       }
 
@@ -97,10 +95,13 @@
         margin-bottom: 2rem;
       }
       .page-api-key input {
-        width: 32rem;
+        width: 30rem;
         padding: 0.5rem 0;
       }
 
+      .page-transforms .add-transform-row {
+        padding-left: 24px;
+      }
       .page-transforms .transforms {
         margin: 1rem 0;
       }
@@ -157,8 +158,17 @@
         color: #c00;
       }
 
+      .page-history .transform {
+        display: grid;
+        grid-template-columns: 2rem 1fr;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+      }
       .page-history pre {
         font-family: system-ui, sans-serif;
+        font-size: 12px;
+        color: #999;
+        margin: 0;
       }
     </style>
   </head>

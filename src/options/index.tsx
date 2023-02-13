@@ -6,12 +6,12 @@ import { TransformsPage } from "./TransformsPage";
 
 class OptionsUI extends Component {
   state = {
-    tab: null as "AI" | "Transforms" | "History" | null,
+    tab: null as "Settings" | "Transforms" | "History" | null,
   };
 
   async componentWillMount() {
     const { apiKey } = await browser.storage.sync.get("apiKey");
-    const tab = apiKey == null ? "AI" : "Transforms";
+    const tab = apiKey == null ? "Settings" : "Transforms";
     this.setState({ tab });
   }
 
@@ -19,7 +19,7 @@ class OptionsUI extends Component {
     return (
       <div>
         <nav>
-          {["AI", "Transforms", "History"].map((tab) => (
+          {["Settings", "Transforms", "History"].map((tab) => (
             <button
               key={tab}
               disabled={this.state.tab === tab}
@@ -32,7 +32,7 @@ class OptionsUI extends Component {
             </button>
           ))}
         </nav>
-        {this.state.tab === "AI" && <APIKeyPage />}
+        {this.state.tab === "Settings" && <APIKeyPage />}
         {this.state.tab === "Transforms" && <TransformsPage />}
         {this.state.tab === "History" && <HistoryPage />}
       </div>
