@@ -1,10 +1,15 @@
+![screenshot](https://user-images.githubusercontent.com/169280/218446341-e0eef851-9a9a-4d64-b992-e90252027115.gif)
+
+Sidekick lets you transform text using AI.
+
+It comes with a few transformations, and you can add your own just by
+describing what you want done in English.
+
 ## Usage
 
-`Cmd+Shift+E` to pick a transform.
+On Mac, `Cmd+Shift+E` to pick a transform. Otherwise, `Ctrl+Shift+E`.
 
-Select text, then `Cmd+E` to apply the transform.
-
-## Quick Start
+## Development
 
 ```
 npm ci
