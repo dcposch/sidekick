@@ -21,13 +21,13 @@
 
       .popup {
         padding: 0;
-        font: 16px system-ui, sans-serif;
+        font: 14px system-ui, sans-serif;
         color: #ddd;
         line-height: 1.5;
       }
 
       .query-input {
-        width: calc(100% - 16px);
+        width: 256px;
         padding: 16px;
         padding-left: 40px;
         background-color: transparent;
@@ -38,7 +38,7 @@
       }
 
       .transform-list {
-        width: 384px;
+        width: 320px;
         min-height: 192px;
       }
 
@@ -49,12 +49,42 @@
         cursor: pointer;
       }
 
+      .title-desc {
+        overflow: hidden;
+      }
+
+      .title,
+      .instructions {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .instructions {
+        font-size: 12px;
+        color: #999;
+      }
+
       .transform:hover {
         background-color: #2a2a2a;
       }
 
       .transform.selected {
         background-color: #333;
+      }
+
+      .help {
+        font-size: 12px;
+        margin: 8px;
+        margin-left: 40px;
+        color: #888;
+      }
+
+      .keyboard-shortcut {
+        display: inline-block;
+        padding: 2px 4px;
+        background-color: #333;
+        border-radius: 2px;
       }
 
       .cta {

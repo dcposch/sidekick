@@ -4,7 +4,6 @@ import * as browser from "webextension-polyfill";
 export interface Transform {
   emoji: string;
   title: string;
-  description: string;
   instructions: string;
 }
 
@@ -43,32 +42,27 @@ const DEFAULT_TRANSFORMS: Transform[] = [
   {
     emoji: "♾\uFE0F",
     title: "Create LaTeX",
-    description: "Convert selected instructions to LaTeX.",
     instructions:
       "Convert instructions to LaTeX. Include an equation environment if necessary.",
   },
   {
     emoji: "✍️\uFE0F",
     title: "Create Markdown",
-    description: "Convert selected instructions to Markdown.",
     instructions: "Convert instructions to Markdown. Use a table if necessary.",
   },
   {
     emoji: "🇺🇸",
     title: "Translate to English",
-    description: "Translate selected text to English.",
     instructions: "Translate the following text to English.",
   },
   {
     emoji: "🇪🇸",
     title: "Translate to Spanish",
-    description: "Translate selected text to Spanish.",
     instructions: "Translate the following text to Spanish.",
   },
   {
     emoji: "☯️",
     title: "Simplify",
-    description: "Make selected text more concise.",
     instructions:
       "Rewrite the following text in concise, vivid language. Make it as simple as possible without losing meaning.",
   },

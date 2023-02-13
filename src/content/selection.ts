@@ -1,5 +1,10 @@
-/** Gets the currently selected text on the page.
- * This is much harder than it needs to be, especially if you want to support Google Docs, which completely replaces the native browser selection mechanism. */
+import { ensureNotNull } from "common/assert";
+
+/**
+ * Gets the currently selected text on the page. This is much harder than it
+ * needs to be, especially if you want to support Google Docs, which completely
+ * replaces the native browser selection mechanism.
+ */
 export function getReplaceableSelection(): ReplaceableSelection | null {
   if (window.location.hostname === "docs.google.com") {
     // Unfortunately the google-docs-utils package doesn't work anymore.
@@ -14,23 +19,28 @@ export function getReplaceableSelection(): ReplaceableSelection | null {
     return null;
   }
 
-  const textarea = getTextArea(sel.anchorNode);
+  const textarea = getTextAreaOrInput(sel.anchorNode);
   if (textarea != null) {
-    return new TextareaSelection(textarea);
+    return new TextareaInputSelection(textarea);
   } else if (isContentEditable(sel.anchorNode)) {
     return new EditableSelection(sel.getRangeAt(0));
   }
   return null;
 }
 
-function getTextArea(node: Node | null): HTMLTextAreaElement | null {
-  if (node == null) {
-    return null;
-  } else if (node.nodeName === "TEXTAREA") {
-    return node as HTMLTextAreaElement;
-  } else if ((node as HTMLElement).firstElementChild?.nodeName === "TEXTAREA") {
-    return (node as HTMLElement).firstElementChild as HTMLTextAreaElement;
+type TextAreaInput = HTMLTextAreaElement | HTMLInputElement;
+
+function getTextAreaOrInput(node: Node | null): TextAreaInput | null {
+  function isTAI(n: Node | null): n is TextAreaInput {
+    if (n == null) return false;
+    if (n.nodeName === "TEXTAREA") return true;
+    return n.nodeName === "INPUT" && (n as HTMLInputElement).type === "text";
   }
+
+  if (node == null) return null;
+  if (isTAI(node)) return node;
+  const firstChild = (node as HTMLElement).firstElementChild;
+  if (isTAI(firstChild)) return firstChild;
   return null;
 }
 
@@ -61,57 +71,28 @@ class EditableSelection implements ReplaceableSelection {
   }
 
   replace(newText: string) {
-    if (document.execCommand("insertText", false, newText)) {
-      return;
-    }
+    // Don't use execCommand here, it doesn't work on sites like Notion.
     this.range.deleteContents();
     this.range.insertNode(document.createTextNode(newText));
   }
 }
 
 /** Selection in a textarea, like Github and many others. */
-class TextareaSelection implements ReplaceableSelection {
+class TextareaInputSelection implements ReplaceableSelection {
   text: string;
+  selStart: number;
+  selEnd: number;
 
-  constructor(private textarea: HTMLTextAreaElement) {
-    this.text = this.textarea.value.substring(
-      this.textarea.selectionStart,
-      this.textarea.selectionEnd
-    );
+  constructor(private textarea: HTMLTextAreaElement | HTMLInputElement) {
+    this.selStart = ensureNotNull(this.textarea.selectionStart);
+    this.selEnd = ensureNotNull(this.textarea.selectionEnd);
+    this.text = this.textarea.value.substring(this.selStart, this.selEnd);
   }
 
   replace(newText: string) {
     if (document.execCommand("insertText", false, newText)) {
       return;
     }
-    this.textarea.setRangeText(
-      newText,
-      this.textarea.selectionStart,
-      this.textarea.selectionEnd,
-      "end"
-    );
-  }
-}
-
-/** Special sauce for Google Docs */
-class GoogleDocsSelection implements ReplaceableSelection {
-  text: string;
-
-  constructor(sel: ((GetSelectionResult | null)[] | null)[]) {
-    const parts = [];
-    for (const line of sel) {
-      if (line == null) continue;
-      for (const word of line) {
-        if (word == null) continue;
-        parts.push(word.selectedText);
-      }
-    }
-    this.text = parts.join("");
-
-    console.log("Google Docs selection", this.text, sel);
-  }
-
-  replace(newText: string) {
-    typeText(newText);
+    this.textarea.setRangeText(newText, this.selStart, this.selEnd, "end");
   }
 }

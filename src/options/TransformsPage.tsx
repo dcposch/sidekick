@@ -94,7 +94,6 @@ interface TRowState {
   editing: boolean;
   emoji: string;
   title: string;
-  description: string;
   instructions: string;
 }
 
@@ -106,7 +105,6 @@ class TransformRow extends Component<TRowProps, TRowState> {
         editing: true,
         emoji: "",
         title: "",
-        description: "",
         instructions: "",
       };
     } else {
@@ -120,8 +118,8 @@ class TransformRow extends Component<TRowProps, TRowState> {
         <div class="transform editable" onClick={this.edit}>
           <div class="emoji">{this.state.emoji}</div>
           <div class="title-desc">
-            <div>{this.state.title}</div>
-            <div>{this.state.description}</div>
+            <div class="title">{this.state.title}</div>
+            <div class="instructions">{this.state.instructions}</div>
           </div>
         </div>
       );
@@ -151,18 +149,6 @@ class TransformRow extends Component<TRowProps, TRowState> {
                 }}
               />
             </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Convert selected text to pig latin."
-                value={this.state.description}
-                onInput={(e) => {
-                  this.setState({
-                    description: (e.target as HTMLInputElement).value,
-                  });
-                }}
-              />
-            </div>
             <textarea
               placeholder={"Convert the following text to pig latin."}
               rows={4}
@@ -173,10 +159,7 @@ class TransformRow extends Component<TRowProps, TRowState> {
                 });
               }}
             />
-            <div class="help">
-              To change the emoji, try using the emoji keyboard (Cmd+Ctrl+Space
-              on Mac).
-            </div>
+            <EmojiHelp />
             <button onClick={this.save}>Save</button> &nbsp;{" "}
             <button onClick={this.cancel}>Cancel</button> &nbsp;{" "}
             <button onClick={this.delete}>Delete</button>
@@ -192,11 +175,10 @@ class TransformRow extends Component<TRowProps, TRowState> {
   };
 
   save = () => {
-    const { emoji, title, description, instructions } = this.state;
+    const { emoji, title, instructions } = this.state;
     const newT = {
       emoji: emoji.trim(),
       title: title.trim(),
-      description: description.trim(),
       instructions: instructions.trim(),
     };
     if (newT.emoji === "") return this.err("Missing emoji");
@@ -231,4 +213,21 @@ class TransformRow extends Component<TRowProps, TRowState> {
     this.props.save(undefined, this.props.transform);
     this.setState({ editing: false, errorMessage: undefined });
   };
+}
+
+function EmojiHelp() {
+  let shortcut = "Ctrl+Cmd+Space";
+  if (navigator.userAgent.includes("Mac")) {
+    shortcut = "Ctrl+Cmd+Space";
+  } else if (navigator.userAgent.includes("Windows")) {
+    shortcut = "Win+.";
+  } else {
+    shortcut = "Ctrl+.";
+  }
+  return (
+    <div class="help">
+      To change the emoji, try the emoji keyboard:{" "}
+      <span className="keyboard-shortcut">{shortcut}</span>
+    </div>
+  );
 }

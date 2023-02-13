@@ -46,13 +46,19 @@ class Popup extends Component<{}, PopupState> {
             >
               <div className="emoji">{transform.emoji}</div>
               <div className="title-desc">
-                <div>
-                  <strong>{transform.title}</strong>
-                </div>
-                <div>{transform.description}</div>
+                <div class="title">{transform.title}</div>
+                <div class="instructions">{transform.instructions}</div>
               </div>
             </div>
           ))}
+        </div>
+        <div className="help">
+          <span class="keyboard-shortcut">Cmd+Shift+E</span> to open this
+          picker.
+        </div>
+        <div className="help">
+          Select text, then use <span class="keyboard-shortcut">Cmd+E</span> to
+          apply.
         </div>
         <div className={classNames("cta", { error: missingApiKey })}>
           <a href="#" onClick={this.goToOptionsPage}>
