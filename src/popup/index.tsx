@@ -84,11 +84,24 @@ class Popup extends Component<{}, PopupState> {
   }
 
   queryInput = (e: Event) => {
-    const query = (e.target as HTMLInputElement).value;
+    const query = (e.target as HTMLInputElement).value.toLowerCase();
     const { transforms } = this.state;
     const matchingTransforms = transforms.filter((transform) =>
-      transform.title.toLowerCase().includes(query.toLowerCase())
+      transform.title.toLowerCase().includes(query)
     );
+
+    function scoreMatch(transform: Transform, query: string) {
+      const title = transform.title.toLowerCase();
+      if (title.startsWith(query)) return 2;
+      else if (title.includes(" " + query)) return 1;
+      return 0;
+    }
+
+    matchingTransforms.sort(
+      (a, b) => scoreMatch(b, query) - scoreMatch(a, query)
+    );
+    console.log("Sorted", matchingTransforms);
+
     const oldSelTitle =
       this.state.matchingTransforms[this.state.selectedIx]?.title;
     const selectedIx = Math.max(
