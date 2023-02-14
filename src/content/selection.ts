@@ -70,13 +70,20 @@ class EditableSelection implements ReplaceableSelection {
     this.text = this.range.toString();
   }
 
-  replace(newText: string) {
+  async replace(newText: string) {
     const { hostname } = window.location;
     if (hostname.endsWith("twitter.com")) {
       console.log(`Using execCommand on ${hostname}`);
       document.execCommand("insertText", false, newText);
       return;
     }
+
+    if (hostname.endsWith("notion.so")) {
+      console.log("Special deleteContents()+execCommand() for Notion");
+      document.execCommand("insertText", false, newText.split("\n").join(" "));
+      return;
+    }
+
     console.log("Attempting replacement via deleteContents()");
     this.range.deleteContents();
     this.range.insertNode(document.createTextNode(newText));

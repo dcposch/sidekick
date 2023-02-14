@@ -1,4 +1,4 @@
-![screenshot](https://user-images.githubusercontent.com/169280/218446341-e0eef851-9a9a-4d64-b992-e90252027115.gif)
+![Screenshot](https://user-images.githubusercontent.com/169280/218654033-7d5749e7-d1ce-4b1a-8046-89a4160b90e5.gif)
 
 Sidekick lets you transform text using AI.
 
@@ -7,7 +7,7 @@ describing what you want done in English.
 
 ## Usage
 
-On Mac, `Cmd+Shift+E` to pick a transform. Otherwise, `Ctrl+Shift+E`.
+Select any editable text. Then, on a Mac, use `Cmd+Shift+E` to pick a transform. Otherwise, `Ctrl+Shift+E`.
 
 ## Development
 
@@ -23,3 +23,8 @@ For development, use
 ```
 npm run watch
 ```
+
+## Credits
+
+Inspired by Varun's [Coauthor](https://github.com/varunshenoy/coauthor)
+extension, which lets you write LaTeX using AI.
